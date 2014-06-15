@@ -43,7 +43,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", ip: "192.168.50.4"
 
   # Rails Server Port Forwarding
-  config.vm.network "forwarded_port", guest: 3000, host: 3010
+  # config.vm.network "forwarded_port", guest: 3000, host: 8010
 
   # Ubuntu
   # config.vm.box = "hashicorp/precise64"
@@ -57,7 +57,8 @@ Vagrant.configure("2") do |config|
   # Docker provisioning 
   config.vm.provision "docker" do |d|
     d.build_image "/app/rearview", args: "-t 'rearview'"
-    d.run "rearview"
+    d.build_image "/app/rearview/docker/postres", args: "-t 'postgres'"
+    # d.run "rearview"
   end
 
   # Setup the containers when the VM is first

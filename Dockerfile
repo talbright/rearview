@@ -47,7 +47,7 @@ RUN apt-get install -y -q \
   nano \
   nodejs \
   mysql-client \
-  mysql-server \
+  postgresql-client \
   gawk \
   libgdbm-dev \
   libffi-dev
@@ -58,35 +58,37 @@ RUN apt-get install -y -q \
 RUN adduser --gecos "" --disabled-password --ingroup users dobby
 RUN mkdir -p /app/rearview
 ADD . /app/rearview
+RUN cp /app/rearview/docker/rearview/database.yml /app/rearview/config
 RUN chown -R dobby.users /app/rearview
 
 #
 # Ruby
 #
+# TODO: test doing this instead of using su
+# USER dobby
+# ENV HOME /home/dobby
 RUN su dobby -c "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
 RUN su dobby -c "echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> ~/.bashrc"
 RUN su dobby -c "echo -e 'eval \"\$(rbenv init -)\"' >> ~/.bashrc" 
 RUN su dobby -c "git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build"
 RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec rbenv install 1.9.3-p547"
 RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec rbenv install jruby-1.7.5"
-RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec gem install bundler"
-RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec bundle install"
 
 #
 # Rearview
 #
+# TODO: use setup script
+# RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bin/setup"
+WORKDIR /app/rearview
+RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec gem install bundler"
+RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bundle install"
+RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bundle exec rake rearview:setup"
+RUN cp /app/rearview/docker/rearview/rearview.rb /app/rearview/config/initializers
 
+# ENV RAILS_ENV production
+# ENV HOME /home/dobby
+# USER dobby
 # WORKDIR /app/rearview
-# RUN bundle install 
-
-# ENV RAILS_ENV development
-
-# ADD ./docker/rails/setup_database.sh /setup_database.sh
-# RUN chmod +x /setup_database.sh
-
 # EXPOSE 3000
-
-# CMD ["/start-server.sh"]
-
-CMD ["bash"]
+# CMD ["/app/rearview/docker/rearview/start-server.sh"]
 
