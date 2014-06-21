@@ -10,14 +10,15 @@ docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 
 # Build containers from Dockerfiles
-docker build -t postgres /app/docker/postgres
-docker build -t rails /app
-docker build -t redis /app/docker/redis/
+docker build -t postgres /app/rearview/docker/postgres
+docker build -t rearview /app/rearview
 
 # Run and link the containers
 docker run -d --name postgres -e POSTGRESQL_USER=docker -e POSTGRESQL_PASS=docker postgres:latest
-docker run -d --name redis redis:latest
-docker run -d -p 3000:3000 -v /app:/app --link redis:redis --link postgres:db --name rails rails:latest
+# Run migrations
+# docker run -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -v /app:/app --link postgres:db -i -t rearview /bin/sh -c "RAILS_ENV=production /app/rearview/docker/rearview/rbenv-exec bundle exec rake rearview:setup"
+docker run -d -p 3000:3000 -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -e "RAILS_ENV=production" -v /app:/app --link postgres:db rearview:latest 
+# docker run -d --name rearview -p 3000:3000 -v /app:/app --link postgres:db rearview:latest
 
 SCRIPT
 
@@ -25,8 +26,7 @@ SCRIPT
 # are started when the vm is rebooted.
 $start = <<SCRIPT
 docker start postgres
-docker start redis
-docker start rails
+docker start rearview
 SCRIPT
 
 VAGRANTFILE_API_VERSION = "2"
@@ -43,7 +43,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", ip: "192.168.50.4"
 
   # Rails Server Port Forwarding
-  # config.vm.network "forwarded_port", guest: 3000, host: 8010
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
 
   # Ubuntu
   # config.vm.box = "hashicorp/precise64"
@@ -55,17 +55,17 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/app/rearview", type: "nfs"
 
   # Docker provisioning 
-  config.vm.provision "docker" do |d|
-    d.build_image "/app/rearview", args: "-t 'rearview'"
-    d.build_image "/app/rearview/docker/postres", args: "-t 'postgres'"
+  # config.vm.provision "docker" do |d|
+    # d.build_image "/app/rearview", args: "-t 'rearview'"
+    # d.build_image "/app/rearview/docker/postres", args: "-t 'postgres'"
     # d.run "rearview"
-  end
+  # end
 
   # Setup the containers when the VM is first
   # created
-  # config.vm.provision "shell", inline: $setup
+  config.vm.provision "shell", inline: $setup
 
   # Make sure the correct containers are running
   # every time we start the VM.
-  # config.vm.provision "shell", run: "always", inline: $start
+  config.vm.provision "shell", run: "always", inline: $start
 end

@@ -64,9 +64,6 @@ RUN chown -R dobby.users /app/rearview
 #
 # Ruby
 #
-# TODO: test doing this instead of using su
-# USER dobby
-# ENV HOME /home/dobby
 RUN su dobby -c "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
 RUN su dobby -c "echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> ~/.bashrc"
 RUN su dobby -c "echo -e 'eval \"\$(rbenv init -)\"' >> ~/.bashrc" 
@@ -77,18 +74,14 @@ RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec 
 #
 # Rearview
 #
-# TODO: use setup script
-# RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bin/setup"
-WORKDIR /app/rearview
-RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec gem install bundler"
-RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bundle install"
-RUN su - dobby -c "/app/rearview/docker/rearview/rbenv-exec bundle exec rake rearview:setup"
+RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec gem install bundler"
+RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec bundle install"
 RUN cp /app/rearview/docker/rearview/rearview.rb /app/rearview/config/initializers
 
-# ENV RAILS_ENV production
-# ENV HOME /home/dobby
-# USER dobby
-# WORKDIR /app/rearview
-# EXPOSE 3000
-# CMD ["/app/rearview/docker/rearview/start-server.sh"]
+ENV RAILS_ENV production
+ENV HOME /home/dobby
+USER dobby
+WORKDIR /app/rearview
+EXPOSE 3000
+CMD "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec docker/rearview/start-server.sh" 
 
