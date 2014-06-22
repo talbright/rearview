@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+bundle exec rake db:create db:migrate db:seed
+exec bin/rails server puma -b 0.0.0.0

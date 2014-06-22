@@ -15,10 +15,8 @@ docker build -t rearview /app/rearview
 
 # Run and link the containers
 docker run -d --name postgres -e POSTGRESQL_USER=docker -e POSTGRESQL_PASS=docker postgres:latest
-# Run migrations
-# docker run -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -v /app:/app --link postgres:db -i -t rearview /bin/sh -c "RAILS_ENV=production /app/rearview/docker/rearview/rbenv-exec bundle exec rake rearview:setup"
-docker run -d -p 3000:3000 -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -e "RAILS_ENV=production" -v /app:/app --link postgres:db rearview:latest 
-# docker run -d --name rearview -p 3000:3000 -v /app:/app --link postgres:db rearview:latest
+# docker run -d -p 3000:3000 -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -e "RAILS_ENV=production" -v /app:/app --link postgres:db rearview
+docker run -d -p 3000:3000 -e HOME=/home/dobby -e RAILS_ENV=production -v /app:/app --link postgres:db rearview
 
 SCRIPT
 
@@ -43,7 +41,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", ip: "192.168.50.4"
 
   # Rails Server Port Forwarding
-  config.vm.network "forwarded_port", guest: 3000, host: 3000
+  config.vm.network "forwarded_port", guest: 3000, host: 8111
 
   # Ubuntu
   # config.vm.box = "hashicorp/precise64"

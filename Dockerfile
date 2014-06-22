@@ -14,6 +14,7 @@ RUN \
   add-apt-repository -y ppa:webupd8team/java && \
   apt-get update && \
   apt-get install -y oracle-java7-installer
+RUN apt-get update
 RUN apt-get install -y -q \
   build-essential \
   openssl \
@@ -50,6 +51,7 @@ RUN apt-get install -y -q \
   postgresql-client \
   gawk \
   libgdbm-dev \
+  netcat \
   libffi-dev
 
 #
@@ -78,10 +80,13 @@ RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec 
 RUN su - dobby -c "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec bundle install"
 RUN cp /app/rearview/docker/rearview/rearview.rb /app/rearview/config/initializers
 
+# 
+# Run setup
+#
 ENV RAILS_ENV production
 ENV HOME /home/dobby
 USER dobby
 WORKDIR /app/rearview
 EXPOSE 3000
-CMD "cd /app/rearview && /app/rearview/docker/rearview/rbenv-exec docker/rearview/start-server.sh" 
+CMD ["/app/rearview/docker/rearview/rbenv-exec","docker/rearview/run"]
 
