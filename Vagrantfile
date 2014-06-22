@@ -15,7 +15,6 @@ docker build -t rearview /app/rearview
 
 # Run and link the containers
 docker run -d --name postgres -e POSTGRESQL_USER=docker -e POSTGRESQL_PASS=docker postgres:latest
-# docker run -d -p 3000:3000 -u dobby -w "/app/rearview" -e "HOME=/home/dobby" -e "RAILS_ENV=production" -v /app:/app --link postgres:db rearview
 docker run -d -p 3000:3000 -e HOME=/home/dobby -e RAILS_ENV=production -v /app:/app --link postgres:db rearview
 
 SCRIPT
