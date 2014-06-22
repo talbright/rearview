@@ -15,15 +15,15 @@ docker build -t rearview /app/rearview
 
 # Run and link the containers
 docker run -d --name postgres -e POSTGRESQL_USER=docker -e POSTGRESQL_PASS=docker postgres:latest
-docker run -d -p 3000:3000 -e HOME=/home/dobby -e RAILS_ENV=production -v /app:/app --link postgres:db rearview
+docker run -d -p 3000:3000 -e HOME=/home/dobby -e RAILS_ENV=production -v /app:/app --link postgres:db rearview:latest
 
 SCRIPT
 
 # Commands required to ensure correct docker containers
 # are started when the vm is rebooted.
 $start = <<SCRIPT
-docker start postgres
-docker start rearview
+docker start postgres >& /dev/null
+docker start rearview >& /dev/null
 SCRIPT
 
 VAGRANTFILE_API_VERSION = "2"
@@ -32,6 +32,7 @@ Vagrant.configure("2") do |config|
 
   # Setup resource requirements
   config.vm.provider "virtualbox" do |v|
+    v.name = "Rearview VM"
     v.memory = 2048
     v.cpus = 2
   end
